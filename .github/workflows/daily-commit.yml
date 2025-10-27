@@ -1,0 +1,49 @@
+name: Daily Automated Commit for DevSync
+
+# When to run this workflow
+on:
+  schedule:
+    # Runs once per day at 6:30 AM UTC
+    # Change the time if needed, but use specific hours/minutes (no wildcards)
+    - cron: '30 6 * * *'
+  
+  # Allow manual triggering for testing
+  workflow_dispatch:
+
+# Grant permission to write to the repository
+permissions:
+  contents: write
+
+jobs:
+  daily-commit-job:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Step 1: Checkout the repository code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      # Step 2: Create/update a file with timestamp
+      # THIS STEP MUST CONTAIN YOUR EMAIL
+      - name: Update activity log for 23f2004078@ds.study.iitm.ac.in
+        run: |
+          # Create a timestamp
+          echo "Last updated: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> activity-log.txt
+          echo "Automated commit by GitHub Actions" >> activity-log.txt
+          echo "---" >> activity-log.txt
+      
+      # Step 3: Commit and push the changes
+      - name: Commit and push changes
+        run: |
+          # Configure git identity
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          # Add the modified file
+          git add activity-log.txt
+          
+          # Commit with a meaningful message
+          git commit -m "Daily activity update - $(date -u '+%Y-%m-%d %H:%M:%S UTC')" || exit 0
+          
+          # Push to the repository
+          git push
